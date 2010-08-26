@@ -1,7 +1,21 @@
-# ideastream(r) Open Source Projects
+# ideastream(r) PBS Digital Learning Library (DLL)
+**Plugin for ExpressionEngine**
 
-* **NPR_API:** An ExpressionEngine 1.6.x plugin for accessing the NPR API.
-* **PBS_DLL:** An ExpressionEngine 1.6.x plugin for accessing the PBS Digital Learning Library (DLL).
+This is a plugin for ExpressionEngin 1.6.x that is used to send requests to
+the PBS Digital Learning Library (DLL).
+
+For more information see the following resources:
+
+* [ideastream](http://www.ideastream.org/) 
+* [ExpressionEngine](http://expressionengine.com/)
+
+## Usage
+
+This is a standard plugin for ExpressionEngine 1.6.x content management system.
+It has not been tested under ExpressionEngine 2.x at all. Use with
+ExpressionEngine 2.x is NOT RECOMMENDED. Installation is according to the
+plugin installation instructions in the ExpressionEngine User Guide:
+[Using Plugins] (http://expressionengine.com/legacy_docs/templates/plugins.html).
 
 ## License
 
@@ -24,4 +38,3 @@ Copyright (c) ideastream(r) -- released under the [MIT license](http://www.opens
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
-
