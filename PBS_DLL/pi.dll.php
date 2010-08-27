@@ -11,8 +11,22 @@ $plugin_info = array(
     'pi_author' => "Jerry D'Antonio",
     'pi_author_url' => 'http://www.ideastream.org',
     'pi_description' => 'EE 1.6.x plugin for sending/parsing queries to the PBS DLL.',
-    'pi_usage' => Npr::usage()
+    'pi_usage' => Dll::usage()
 );
+
+//------------------------------------------------------------------------------
+// ExpressionEngine Setup
+//------------------------------------------------------------------------------
+
+// Load the XML parsing library
+if ( ! class_exists('EE_XMLparser'))
+{
+    require PATH_CORE.'core.xmlparser'.EXT;
+}
+
+//------------------------------------------------------------------------------
+// Dll Plugin Class
+//------------------------------------------------------------------------------
 
 /**
  * ExpressionEngine plugin for interfacing with the NPR API.
@@ -41,7 +55,17 @@ class Dll
     //--------------------------------------------------------------------------
 
     // class constants
+    const TICKET_SESSION_KEY = '__pbs_dll_api_ticket__';
     const CURL_TIMEOUT = 10;
+
+    const AUTH_URL = 'https://dll-svc.pbs.org/alfresco/service/api/login?';
+    const QUERY_URL = 'https://dll-svc.pbs.org/alfresco/service/stn/query?';
+    const ASSET_URL = 'https://dll-svc.pbs.org/alfresco/service/stn/findAssetsById?';
+    
+    const ALL_ASSET_QUERY = 'e036cb86-2183-45ac-95e8-49d6acade6b8';
+    const OPEN_TEXT_QUERY = '4ade20f4-883b-4943-aef7-596fd79a493f';
+    const MEDIA_TYPE_QUERY = '5816536c-7a19-425d-afba-f66c8281b90a';
+    const CURRICULUM_TOPIC_QUERY = 'ba32e4ce-5e84-4b8b-b4b0-14cb3ccaaaa7';
 
     // cURL handle
     private $_curl;
@@ -99,9 +123,59 @@ class Dll
     // Operations
     //--------------------------------------------------------------------------
 
+    public function all_assets()
+    {
+        return $this->request_ticket('WVIZ', 'WVIZ');
+    }
+
     //--------------------------------------------------------------------------
     // Messaging Utilities
     //--------------------------------------------------------------------------
+
+    protected function ticket(/*string*/ $ticket = false) /*mixed*/
+    {
+        if ($ticket) {
+            $_SESSION[self::TICKET_SESSION_KEY] = $ticket;
+        } else if (isset($_SESSION[self::TICKET_SESSION_KEY])) {
+            $ticket = $_SESSION[self::TICKET_SESSION_KEY];
+        } else {
+            $ticket = false;
+        }
+
+        return $ticket;
+    }
+
+	/**
+	 * <ticket>TICKET_ebbf06d2ec23442f470e719c2074c308bb352512</ticket>
+	 **/
+    protected function request_ticket(/*string*/ $user, /*string*/ $pwd)
+	{
+		// set the ticket
+		$ticket = $this->ticket();
+
+        if (! $ticket)
+        {
+            // send the request
+            $url = self::AUTH_URL . "u={$user}&pw={$pwd}";
+            $this->setopt(CURLOPT_HTTPGET, TRUE);
+            $this->setopt(CURLOPT_URL, $url);
+            $ok = $this->exec();
+
+            // process the response
+            if ($ok)
+            {
+				$XML = new EE_XMLparser;
+				$xml_obj = $XML->parse_xml($this->_response);
+                if (isset($xml_obj->value))
+                {
+                    $ticket = $xml_obj->value;
+                    $this->ticket($ticket);
+                }
+            }
+        }
+
+        return $ticket;
+	}
      
     //---------------------------------------------------------------------------
     // cURL Operations
@@ -155,6 +229,8 @@ class Dll
             // set common options on success
             if ($this->_curl !== FALSE) {
                 curl_setopt($this->_curl, CURLOPT_RETURNTRANSFER, TRUE);
+                curl_setopt($this->_curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+                curl_setopt($this->_curl, CURLOPT_SSL_VERIFYHOST, FALSE);
                 curl_setopt($this->_curl, CURLOPT_CONNECTTIMEOUT, self::CURL_TIMEOUT);
             }
             else
