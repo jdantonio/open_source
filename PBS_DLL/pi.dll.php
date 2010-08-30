@@ -95,6 +95,8 @@ class Dll
      **/
     public function __construct()
     {
+        session_start();
+
         global $DB, $DSP, $FNS, $IN, $LANG, $LOC, $REGX, $SESS, $TMPL;
 
         $this->_DB = $DB;
@@ -123,9 +125,108 @@ class Dll
     // Operations
     //--------------------------------------------------------------------------
 
+    /**
+     * {exp:dll:asset user="<user>" pwd="<password>" id="<id 1>,<id 2>,<...>"}
+     *     <h2>{edcarId}</h2>
+     *     <ul>
+     *         <li>{edcarId}</li>
+     *         <li>{type}</li>
+     *         <li>{score}</li>
+     *     </ul>
+     * {exp:dll:asset}
+     **/
+    public function asset()
+    {
+        $tagdata = '';
+
+        $assets = $this->_TMPL->fetch_param('id');
+
+        if ($assets)
+        {
+            $ticket = $this->request_ticket();
+            if ($ticket)
+            {
+                // build the query
+                $url = self::ASSET_URL . '&alf_ticket=' . $ticket;
+                $assets = explode(',', $assets);
+                foreach ($assets as $asset) {
+                    $url .= '&id[]=' . trim($asset);
+                }
+
+                // send the request
+                $this->setopt(CURLOPT_HTTPGET, TRUE);
+                $this->setopt(CURLOPT_URL, $url);
+                $ok = $this->exec();
+
+                if ($ok)
+                {
+                    $XML = new EE_XMLparser;
+                    $result = $XML->parse_xml($this->_response);
+                    foreach ($result->children as $asset)
+                    {
+                        $tagdata .= $this->process_asset_tagdata($asset, $this->_TMPL->tagdata);
+                    }
+                }
+            }
+        }
+
+        return $tagdata;
+    }
+
     public function all_assets()
     {
-        return $this->request_ticket('WVIZ', 'WVIZ');
+        $tagdata = '';
+
+        $ticket = $this->request_ticket();
+        if ($ticket)
+        {
+            // send the request
+            $url = self::QUERY_URL . 'queryId=' . self::ALL_ASSET_QUERY . '&alf_ticket=' . $ticket;
+            $this->setopt(CURLOPT_HTTPGET, TRUE);
+            $this->setopt(CURLOPT_URL, $url);
+            $ok = $this->exec();
+
+            if ($ok) $tagdata = $this->_response;
+        }
+
+        return $tagdata;
+    }
+
+    //--------------------------------------------------------------------------
+    // Template Utilities
+    //--------------------------------------------------------------------------
+
+    protected function process_asset_single_properties(/*array*/ $props, /*string*/ $tagdata) /*string*/
+    {
+        foreach ($props as $prop)
+        {
+            if (! is_array($prop->children))
+            {
+                $tagdata = $this->_FNS->prep_conditionals($tagdata, array($prop->tag => $prop->value));
+                $tagdata = $this->_TMPL->swap_var_single($prop->tag, $prop->value, $tagdata);
+            }
+        }
+
+        return $tagdata;
+    }
+
+    protected function process_asset_tagdata(/*XML_Cache Object*/ $asset, /*string*/ $tagdata) /*string*/
+    {
+        $cond = array();
+        $cond['edcarId'] = $asset->attributes['edcarId'];
+        $cond['type'] = $asset->attributes['type'];
+        $cond['score'] = $asset->attributes['score'];
+
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, $cond);
+
+        foreach ($cond as $key => $value)
+        {
+            $tagdata = $this->_TMPL->swap_var_single($key, $value, $tagdata);
+        }
+
+        $tagdata = $this->process_asset_single_properties($asset->children[0]->children, $tagdata);
+
+        return $tagdata;
     }
 
     //--------------------------------------------------------------------------
@@ -148,13 +249,18 @@ class Dll
 	/**
 	 * <ticket>TICKET_ebbf06d2ec23442f470e719c2074c308bb352512</ticket>
 	 **/
-    protected function request_ticket(/*string*/ $user, /*string*/ $pwd)
+    protected function request_ticket(/*string*/ $user = false, /*string*/ $pwd = false)
 	{
 		// set the ticket
 		$ticket = $this->ticket();
 
         if (! $ticket)
         {
+            // get the user information
+            if (! $user) $user = $this->_TMPL->fetch_param('user');
+            if (! $pwd) $pwd = $this->_TMPL->fetch_param('pwd');
+            if (! $pwd) $pwd = $this->_TMPL->fetch_param('password');
+
             // send the request
             $url = self::AUTH_URL . "u={$user}&pw={$pwd}";
             $this->setopt(CURLOPT_HTTPGET, TRUE);
