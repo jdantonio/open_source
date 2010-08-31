@@ -127,11 +127,80 @@ class Dll
 
     /**
      * {exp:dll:asset user="<user>" pwd="<password>" id="<id 1>,<id 2>,<...>"}
-     *     <h2>{edcarId}</h2>
+     *     <h2>{title}</h2>
      *     <ul>
-     *         <li>{edcarId}</li>
-     *         <li>{type}</li>
-     *         <li>{score}</li>
+     *         {if edcarId}<li><b>EDCAR ID:</b> {edcarId}</li>{/if}
+     *         {if type}<li><b>Type:</b> {type}</li>{/if}
+     *         {if score}<li><b>Score:</b> {score}</li>{/if}
+     *         {if accessibility}<li><b>Accessibility:</b> {accessibility}</li>{/if}
+     *         {if aspectRatio}<li><b>Aspect Ratio:</b> {aspectRatio}</li>{/if}
+     *         {if assetSubmitter}<li><b>Asset Submitter:</b> {assetSubmitter}</li>{/if}
+     *         {if assetSubmitterTimestamp}<li><b>Asset Submitter Timestamp:</b> {assetSubmitterTimestamp}</li>{/if}
+     *         {if colors}<li><b>Colors:</b> {colors}</li>{/if}
+     *         {if contentFlagsDescription}<li><b>Content Flags Description:</b> {contentFlagsDescription}</li>{/if}
+     *         {if contextualPageURL}<li><b>Contextual Page URL:</b> {contextualPageURL}</li>{/if}
+     *         {if copyrightYear}<li><b>Copyright Year:</b> {copyrightYear}</li>{/if}
+     *         {if dataRate}<li><b>Data Rate:</b> {dataRate}</li>{/if}
+     *         {if dateAvailable}<li><b>Date Available:</b> {dateAvailable}</li>{/if}
+     *         {if dateCreated}<li><b>Date Created:</b> {dateCreated}</li>{/if}
+     *         {if dateIssued}<li><b>Date Issued:</b> {dateIssued}</li>{/if}
+     *         {if description}<li><b>Description:</b> {description}</li>{/if}
+     *         {if descriptionLong}<li><b>Description Long:</b> {descriptionLong}</li>{/if}
+     *         {if descriptionShort}<li><b>Description Short:</b> {descriptionShort}</li>{/if}
+     *         {if descriptionType}<li><b>Description Type:</b> {descriptionType}</li>{/if}
+     *         {if downloadURL}<li><b>Download URL:</b> {downloadURL}</li>{/if}
+     *         {if expirationDate}<li><b>Expiration Date:</b> {expirationDate}</li>{/if}
+     *         {if extentDuration}<li><b>Extent Duration:</b> {extentDuration}</li>{/if}
+     *         {if extentFileSize}<li><b>Extent File Size:</b> {extentFileSize}</li>{/if}
+     *         {if externalId}<li><b>External Id:</b> {externalId}</li>{/if}
+     *         {if externalIdSource}<li><b>External Id Source:</b> {externalIdSource}</li>{/if}
+     *         {if formatDigital}<li><b>Format Digital:</b> {formatDigital}</li>{/if}
+     *         {if frameRate}<li><b>Frame Rate:</b> {frameRate}</li>{/if}
+     *         {if geographicAccessRestrictionType}<li><b>Geographic Access Restriction Type:</b> {geographicAccessRestrictionType}</li>{/if}
+     *         {if languagePrimary}<li><b>Language Primary:</b> {languagePrimary}</li>{/if}
+     *         {if mediaTypeGeneral}<li><b>Media Type General:</b> {mediaTypeGeneral}</li>{/if}
+     *         {if mediaTypeSpecific}<li><b>Media Type Specific:</b> {mediaTypeSpecific}</li>{/if}
+     *         {if pathToMediaItem}<li><b>Path To Media Item:</b> {pathToMediaItem}</li>{/if}
+     *         {if renderingWindowHeight}<li><b>Rendering Window Height:</b> {renderingWindowHeight}</li>{/if}
+     *         {if renderingWindowWidth}<li><b>Rendering Window Width:</b> {renderingWindowWidth}</li>{/if}
+     *         {if rights}<li><b>Rights:</b> {rights}</li>{/if}
+     *         {if rightsDistribution}<li><b>Rights Distribution:</b> {rightsDistribution}</li>{/if}
+     *         {if rightsSummary}<li><b>Rights Summary:</b> {rightsSummary}</li>{/if}
+     *         {if rightsSummaryModifyType}<li><b>Rights Summary Modify Type:</b> {rightsSummaryModifyType}</li>{/if}
+     *         {if samplingRate}<li><b>Sampling Rate:</b> {samplingRate}</li>{/if}
+     *         {if tier}<li><b>Tier:</b> {tier}</li>{/if}
+     *         {if timeStart}<li><b>Time Start:</b> {timeStart}</li>{/if}
+     *         {if title}<li><b>Title:</b> {title}</li>{/if}
+     *         {if vendedBy}<li><b>Vended By:</b> {vendedBy}</li>{/if}
+     *         {if audienceLevels}<li><b>audienceLevels:</b> {audienceLevels backspace="2"}{audienceLevel}, {/audienceLevels}</li>{/if}
+     *         {if contentFlags}<li><b>contentFlags:</b> {contentFlags backspace="2"}{contentFlag}, {/contentFlags}</li>{/if}
+     *         {if contributors}<li><b>contributors:</b> {contributors backspace="2"}{contributor}, {/contributors}</li>{/if}
+     *         {if contributorTypes}<li><b>contributorTypes:</b> {contributorTypes backspace="2"}{contributorType}, {/contributorTypes}</li>{/if}
+     *         {if coverageEvents}<li><b>coverageEvents:</b> {coverageEvents backspace="2"}{coverageEvent}, {/coverageEvents}</li>{/if}
+     *         {if coverageEventContributors}<li><b>coverageEventContributors:</b> {coverageEventContributors backspace="2"}{coverageEventContributor}, {/coverageEventContributors}</li>{/if}
+     *         {if coverageGeographicals}<li><b>coverageGeographicals:</b> {coverageGeographicals backspace="2"}{coverageGeographical}, {/coverageGeographicals}</li>{/if}
+     *         {if coverageGeographicalContributors}<li><b>coverageGeographicalContributors:</b> {coverageGeographicalContributors backspace="2"}{coverageGeographicalContributor}, {/coverageGeographicalContributors}</li>{/if}
+     *         {if coverageOrganizations}<li><b>coverageOrganizations:</b> {coverageOrganizations backspace="2"}{coverageOrganization}, {/coverageOrganizations}</li>{/if}
+     *         {if coverageOrganizationContributors}<li><b>coverageOrganizationContributors:</b> {coverageOrganizationContributors backspace="2"}{coverageOrganizationContributor}, {/coverageOrganizationContributors}</li>{/if}
+     *         {if coveragePeoples}<li><b>coveragePeoples:</b> {coveragePeoples backspace="2"}{coveragePeople}, {/coveragePeoples}</li>{/if}
+     *         {if coveragePeopleContributors}<li><b>coveragePeopleContributors:</b> {coveragePeopleContributors backspace="2"}{coveragePeopleContributor}, {/coveragePeopleContributors}</li>{/if}
+     *         {if coverageTimePeriods}<li><b>coverageTimePeriods:</b> {coverageTimePeriods backspace="2"}{coverageTimePeriod}, {/coverageTimePeriods}</li>{/if}
+     *         {if coverageTimePeriodContributors}<li><b>coverageTimePeriodContributors:</b> {coverageTimePeriodContributors backspace="2"}{coverageTimePeriodContributor}, {/coverageTimePeriodContributors}</li>{/if}
+     *         {if creators}<li><b>creators:</b> {creators backspace="2"}{creator}, {/creators}</li>{/if}
+     *         {if creatorOthers}<li><b>creatorOthers:</b> {creatorOthers backspace="2"}{creatorOther}, {/creatorOthers}</li>{/if}
+     *         {if creatorOtherTypes}<li><b>creatorOtherTypes:</b> {creatorOtherTypes backspace="2"}{creatorOtherType}, {/creatorOtherTypes}</li>{/if}
+     *         {if creatorTypes}<li><b>creatorTypes:</b> {creatorTypes backspace="2"}{creatorType}, {/creatorTypes}</li>{/if}
+     *         {if curriculumGeneralTopics}<li><b>curriculumGeneralTopics:</b> {curriculumGeneralTopics backspace="2"}{curriculumGeneralTopic}, {/curriculumGeneralTopics}</li>{/if}
+     *         {if curriculumStandards}<li><b>curriculumStandards:</b> {curriculumStandards backspace="2"}{curriculumStandard}, {/curriculumStandards}</li>{/if}
+     *         {if encodings}<li><b>encodings:</b> {encodings backspace="2"}{encoding}, {/encodings}</li>{/if}
+     *         {if geographicAccessRestrictions}<li><b>geographicAccessRestrictions:</b> {geographicAccessRestrictions backspace="2"}{geographicAccessRestriction}, {/geographicAccessRestrictions}</li>{/if}
+     *         {if gradeLevels}<li><b>gradeLevels:</b> {gradeLevels backspace="2"}{gradeLevel}, {/gradeLevels}</li>{/if}
+     *         {if keywords}<li><b>keywords:</b> {keywords backspace="2"}{keyword}, {/keywords}</li>{/if}
+     *         {if keywordsContributors}<li><b>keywordsContributors:</b> {keywordsContributors backspace="2"}{keywordsContributor}, {/keywordsContributors}</li>{/if}
+     *         {if languageAlternates}<li><b>languageAlternates:</b> {languageAlternates backspace="2"}{languageAlternate}, {/languageAlternates}</li>{/if}
+     *         {if learningObjectives}<li><b>learningObjectives:</b> {learningObjectives backspace="2"}{learningObjective}, {/learningObjectives}</li>{/if}
+     *         {if titleAlternatives}<li><b>titleAlternatives:</b> {titleAlternatives backspace="2"}{titleAlternative}, {/titleAlternatives}</li>{/if}
+     *         {if titleTypes}<li><b>titleTypes:</b> {titleTypes backspace="2"}{titleType}, {/titleTypes}</li>{/if}
      *     </ul>
      * {exp:dll:asset}
      **/
