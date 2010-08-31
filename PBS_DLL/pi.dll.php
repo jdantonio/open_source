@@ -138,36 +138,19 @@ class Dll
     public function asset()
     {
         $tagdata = '';
-
         $assets = $this->_TMPL->fetch_param('id');
 
         if ($assets)
         {
-            $ticket = $this->request_ticket();
-            if ($ticket)
-            {
-                // build the query
-                $url = self::ASSET_URL . '&alf_ticket=' . $ticket;
-                $assets = explode(',', $assets);
-                foreach ($assets as $asset) {
-                    $url .= '&id[]=' . trim($asset);
-                }
-
-                // send the request
-                $this->setopt(CURLOPT_HTTPGET, TRUE);
-                $this->setopt(CURLOPT_URL, $url);
-                $ok = $this->exec();
-
-                if ($ok)
-                {
-                    $XML = new EE_XMLparser;
-                    $result = $XML->parse_xml($this->_response);
-                    foreach ($result->children as $asset)
-                    {
-                        $tagdata .= $this->process_asset_tagdata($asset, $this->_TMPL->tagdata);
-                    }
-                }
+            // build the query
+            $url = self::ASSET_URL;
+            $assets = explode(',', $assets);
+            foreach ($assets as $asset) {
+                $url .= '&id[]=' . trim($asset);
             }
+
+            // send the request
+            $tagdata = $this->send_dll_request($url);
         }
 
         return $tagdata;
@@ -181,12 +164,8 @@ class Dll
         if ($ticket)
         {
             // send the request
-            $url = self::QUERY_URL . 'queryId=' . self::ALL_ASSET_QUERY . '&alf_ticket=' . $ticket;
-            $this->setopt(CURLOPT_HTTPGET, TRUE);
-            $this->setopt(CURLOPT_URL, $url);
-            $ok = $this->exec();
-
-            if ($ok) $tagdata = $this->_response;
+            $url = self::QUERY_URL . 'queryId=' . self::ALL_ASSET_QUERY;
+            $tagdata = $this->send_dll_request($url);
         }
 
         return $tagdata;
@@ -282,6 +261,44 @@ class Dll
 
         return $ticket;
 	}
+
+    protected function send_dll_request(/*string*/ $url) /*string*/
+    {
+        $tagdata = '';
+
+        // get the api ticket
+        $ticket = $this->request_ticket();
+        if ($ticket)
+        {
+            // send the request
+            $url .= '&alf_ticket=' . $ticket;
+            $this->setopt(CURLOPT_HTTPGET, TRUE);
+            $this->setopt(CURLOPT_URL, $url);
+            $ok = $this->exec();
+
+            if ($ok)
+            {
+                // parse the result xml
+                $XML = new EE_XMLparser;
+                $result = $XML->parse_xml($this->_response);
+
+                // determine the limit
+                $limit = intval($this->_TMPL->fetch_param('limit'));
+                if ($limit === 0) {
+                    $limit = count($result->children);
+                } else {
+                    $limit = min($limit, count($result->children));
+                }
+
+                // loop through and process the results
+                for ($i = 0; $i < $limit; $i++) {
+                    $tagdata .= $this->process_asset_tagdata($result->children[$i], $this->_TMPL->tagdata);
+                }
+            }
+        }
+
+        return $tagdata;
+    }
      
     //---------------------------------------------------------------------------
     // cURL Operations
