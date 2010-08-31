@@ -177,14 +177,76 @@ class Dll
 
     protected function process_asset_single_properties(/*array*/ $props, /*string*/ $tagdata) /*string*/
     {
+        // conditional buffer
+        $cond = array();
+
         foreach ($props as $prop)
         {
             if (! is_array($prop->children))
             {
-                $tagdata = $this->_FNS->prep_conditionals($tagdata, array($prop->tag => $prop->value));
+                $cond[$prop->tag] = $prop->value;
                 $tagdata = $this->_TMPL->swap_var_single($prop->tag, $prop->value, $tagdata);
             }
         }
+
+        // process conditional tags
+        foreach ($this->_TMPL->var_single as $var)
+        {
+            if (! array_key_exists($var, $cond)) {
+                $cond[$var] = FALSE;
+            }
+        }
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, $cond);
+
+        return $tagdata;
+    }
+
+    protected function process_asset_pair_properties(/*array*/ $props, /*string*/ $tagdata) /*string*/
+    {
+        // conditional buffer
+        $cond = array();
+
+        foreach ($props as $prop)
+        {
+            if (is_array($prop->children))
+            {
+                // get tag name
+                $tag = $prop->tag;
+
+                // add the tag to the conditional array
+                $cond[$tag] = TRUE;
+
+                // extract the full tag data for this tag
+                //$pattern = '/('.LD.$tag.'[^'.RD.']*'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
+                $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
+                $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
+
+                // process all matches
+                foreach ($matches as $match)
+                {
+                    $tdata = '';
+                    foreach ($prop->children as $child)
+                    {
+                        $pattern = '/'.LD.$child->tag.RD.'/';
+                        $tdata .= preg_replace($pattern, $child->value, $match[4]);
+                    }
+
+                    // replace the full tag
+                    $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
+                    $tagdata = str_replace($match[0], $tdata, $tagdata);
+                }
+            }
+        }
+
+        // process conditional tags
+        foreach ($this->_TMPL->var_pair as $var => $opts)
+        {
+            preg_match('/^\S+/', $var, $matches);
+            if (! array_key_exists($matches[0], $cond)) {
+                $cond[$matches[0]] = FALSE;
+            }
+        }
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, $cond);
 
         return $tagdata;
     }
@@ -203,6 +265,7 @@ class Dll
             $tagdata = $this->_TMPL->swap_var_single($key, $value, $tagdata);
         }
 
+        $tagdata = $this->process_asset_pair_properties($asset->children[0]->children, $tagdata);
         $tagdata = $this->process_asset_single_properties($asset->children[0]->children, $tagdata);
 
         return $tagdata;
