@@ -244,11 +244,63 @@ class Dll
     // Template Utilities
     //--------------------------------------------------------------------------
 
-    protected function process_asset_single_properties(/*array*/ $props, /*string*/ $tagdata) /*string*/
+    protected function process_asset_tagdata(/*XML_Cache Object*/ $asset, /*string*/ $tagdata) /*string*/
+    {
+        $cond = array();
+        $id = $cond['edcarId'] = $asset->attributes['edcarId'];
+        $cond['type'] = $asset->attributes['type'];
+        $cond['score'] = $asset->attributes['score'];
+
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, $cond);
+
+        foreach ($cond as $key => $value)
+        {
+            $tagdata = $this->_TMPL->swap_var_single($key, $value, $tagdata);
+        }
+
+        foreach ($asset->children as $element)
+        {
+            switch ($element->tag)
+            {
+            case 'properties':
+                $tagdata = $this->process_asset_pair_properties($element->children, $tagdata, $id);
+                $tagdata = $this->process_asset_single_properties($element->children, $tagdata, $id);
+                break;
+            case 'taxonomys':
+                $tagdata = $this->process_asset_taxonomys($element->children, $tagdata, $id);
+                break;
+            case 'thumbnails':
+                $tagdata = $this->process_asset_thumbnails($element->children, $tagdata, $id);
+                break;
+            case 'closedCaptions':
+                $tagdata = $this->process_asset_closed_captions($element->children, $tagdata, $id);
+                break;
+            case 'transcript':
+                $tagdata = $this->process_asset_transcript($element->children, $tagdata, $id);
+                break;
+            case 'orderedAssets':
+                $tagdata = $this->process_asset_ordered_assets($element->children, $tagdata, $id);
+                break;
+            case 'unorderedAssets':
+                $tagdata = $this->process_asset_unordered_assets($element->children, $tagdata, $id);
+                break;
+            case 'renditions':
+                $tagdata = $this->process_asset_renditions($element->children, $tagdata, $id);
+                break;
+            }
+        }
+
+        $tagdata = $this->process_remaining_conditionals($tagdata);
+
+        return $tagdata;
+    }
+
+    protected function process_asset_single_properties(/*array*/ $props, /*string*/ $tagdata, /*string*/ $id) /*string*/
     {
         // conditional buffer
         $cond = array();
 
+        // process properties
         foreach ($props as $prop)
         {
             if (! is_array($prop->children))
@@ -259,18 +311,12 @@ class Dll
         }
 
         // process conditional tags
-        foreach ($this->_TMPL->var_single as $var)
-        {
-            if (! array_key_exists($var, $cond)) {
-                $cond[$var] = FALSE;
-            }
-        }
         $tagdata = $this->_FNS->prep_conditionals($tagdata, $cond);
 
         return $tagdata;
     }
 
-    protected function process_asset_pair_properties(/*array*/ $props, /*string*/ $tagdata) /*string*/
+    protected function process_asset_pair_properties(/*array*/ $props, /*string*/ $tagdata, /*string*/ $id) /*string*/
     {
         // conditional buffer
         $cond = array();
@@ -286,7 +332,6 @@ class Dll
                 $cond[$tag] = TRUE;
 
                 // extract the full tag data for this tag
-                //$pattern = '/('.LD.$tag.'[^'.RD.']*'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
                 $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
                 $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
 
@@ -308,6 +353,145 @@ class Dll
         }
 
         // process conditional tags
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, $cond);
+
+        return $tagdata;
+    }
+
+    protected function process_asset_taxonomys(/*array*/ $taxonomys, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    {
+        // conditional buffer
+        $cond = array();
+
+        if (is_array($taxonomys))
+        {
+            $tag = 'taxonomys';
+
+            // extract the full tag data for this tag
+            $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
+            $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
+
+            // process all matches
+            foreach ($matches as $match)
+            {
+                $tdata = '';
+                foreach ($taxonomys as $child)
+                {
+                    $pattern = '/'.LD.$child->tag.RD.'/';
+                    $tdata .= preg_replace($pattern, $child->value, $match[4]);
+                }
+
+                // replace the full tag
+                $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
+                $tagdata = str_replace($match[0], $tdata, $tagdata);
+            }
+
+            $tagdata = $this->_FNS->prep_conditionals($tagdata, array($tag => TRUE));
+        }
+        else
+        {
+            $tagdata = $this->_FNS->prep_conditionals($tagdata, array($tag => FALSE));
+        }
+
+        return $tagdata;
+    }
+
+    protected function process_asset_thumbnails(/*array*/ $thumbnails, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    {
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, array('thumbnails' => TRUE));
+
+        foreach ($thumbnails as $thumbnail)
+        {
+            $cond = array(
+                'thumbnail' => FALSE,
+                'thumbnail_url' => FALSE,
+                'thumbnail_width' => FALSE,
+                'thumbnail_height' => FALSE,
+            );
+
+            foreach ($thumbnail->children as $attr)
+            {
+                switch ($attr->tag)
+                {
+                case 'url':
+                    $cond['thumbnail'] = $attr->value;
+                    $cond['thumbnail_url'] = $attr->value;
+                    break;
+                case 'renderingWindowWidth':
+                    $cond['thumbnail_width'] = $attr->value;
+                    break;
+                case 'renderingWindowHeight':
+                    $cond['thumbnail_height'] = $attr->value;
+                    break;
+                }
+            }
+
+            // extract the full tag data for this tag
+            $tag = 'thumbnails';
+            $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
+            $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
+
+            // process all matches
+            foreach ($matches as $match)
+            {
+                $tdata = $match[4];
+                $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
+                foreach ($cond as $key => $value)
+                {
+                    $pattern = '/'.LD.$key.RD.'/';
+                    $tdata = preg_replace($pattern, $value, $tdata);
+                }
+
+                // replace the full tag
+                $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
+                $tagdata = str_replace($match[0], $tdata, $tagdata);
+            }
+        }
+
+        return $tagdata;
+    }
+
+    protected function process_asset_closed_captions(/*array*/ $captions, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    {
+        echo "<p>process_asset_closed_captions for {$id}</p>";
+        return $tagdata;
+    }
+
+    protected function process_asset_transcript(/*array*/ $transcript, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    {
+        echo "<p>process_asset_transcript for {$id}</p>";
+        return $tagdata;
+    }
+
+    protected function process_asset_ordered_assets(/*array*/ $assets, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    {
+        echo "<p>process_asset_ordered_assets for {$id}</p>";
+        return $tagdata;
+    }
+
+    protected function process_asset_unordered_assets(/*array*/ $assets, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    {
+        echo "<p>process_asset_unordered_assets for {$id}</p>";
+        return $tagdata;
+    }
+
+    protected function process_asset_renditions(/*array*/ $renditions, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    {
+        echo "<p>process_asset_taxonomys for {$id}</p>";
+        return $tagdata;
+    }
+
+    protected function process_remaining_conditionals(/*string*/ $tagdata) /*string*/
+    {
+        $cond = array();
+
+        foreach ($this->_TMPL->var_single as $var)
+        {
+            if (! array_key_exists($var, $cond)) {
+                $cond[$var] = FALSE;
+            }
+        }
+        
         foreach ($this->_TMPL->var_pair as $var => $opts)
         {
             preg_match('/^\S+/', $var, $matches);
@@ -315,27 +499,8 @@ class Dll
                 $cond[$matches[0]] = FALSE;
             }
         }
-        $tagdata = $this->_FNS->prep_conditionals($tagdata, $cond);
-
-        return $tagdata;
-    }
-
-    protected function process_asset_tagdata(/*XML_Cache Object*/ $asset, /*string*/ $tagdata) /*string*/
-    {
-        $cond = array();
-        $cond['edcarId'] = $asset->attributes['edcarId'];
-        $cond['type'] = $asset->attributes['type'];
-        $cond['score'] = $asset->attributes['score'];
 
         $tagdata = $this->_FNS->prep_conditionals($tagdata, $cond);
-
-        foreach ($cond as $key => $value)
-        {
-            $tagdata = $this->_TMPL->swap_var_single($key, $value, $tagdata);
-        }
-
-        $tagdata = $this->process_asset_pair_properties($asset->children[0]->children, $tagdata);
-        $tagdata = $this->process_asset_single_properties($asset->children[0]->children, $tagdata);
 
         return $tagdata;
     }
