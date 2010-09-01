@@ -172,37 +172,67 @@ class Dll
      *         {if timeStart}<li><b>Time Start:</b> {timeStart}</li>{/if}
      *         {if title}<li><b>Title:</b> {title}</li>{/if}
      *         {if vendedBy}<li><b>Vended By:</b> {vendedBy}</li>{/if}
-     *         {if audienceLevels}<li><b>audienceLevels:</b> {audienceLevels backspace="2"}{audienceLevel}, {/audienceLevels}</li>{/if}
-     *         {if contentFlags}<li><b>contentFlags:</b> {contentFlags backspace="2"}{contentFlag}, {/contentFlags}</li>{/if}
-     *         {if contributors}<li><b>contributors:</b> {contributors backspace="2"}{contributor}, {/contributors}</li>{/if}
-     *         {if contributorTypes}<li><b>contributorTypes:</b> {contributorTypes backspace="2"}{contributorType}, {/contributorTypes}</li>{/if}
-     *         {if coverageEvents}<li><b>coverageEvents:</b> {coverageEvents backspace="2"}{coverageEvent}, {/coverageEvents}</li>{/if}
-     *         {if coverageEventContributors}<li><b>coverageEventContributors:</b> {coverageEventContributors backspace="2"}{coverageEventContributor}, {/coverageEventContributors}</li>{/if}
-     *         {if coverageGeographicals}<li><b>coverageGeographicals:</b> {coverageGeographicals backspace="2"}{coverageGeographical}, {/coverageGeographicals}</li>{/if}
-     *         {if coverageGeographicalContributors}<li><b>coverageGeographicalContributors:</b> {coverageGeographicalContributors backspace="2"}{coverageGeographicalContributor}, {/coverageGeographicalContributors}</li>{/if}
-     *         {if coverageOrganizations}<li><b>coverageOrganizations:</b> {coverageOrganizations backspace="2"}{coverageOrganization}, {/coverageOrganizations}</li>{/if}
-     *         {if coverageOrganizationContributors}<li><b>coverageOrganizationContributors:</b> {coverageOrganizationContributors backspace="2"}{coverageOrganizationContributor}, {/coverageOrganizationContributors}</li>{/if}
-     *         {if coveragePeoples}<li><b>coveragePeoples:</b> {coveragePeoples backspace="2"}{coveragePeople}, {/coveragePeoples}</li>{/if}
-     *         {if coveragePeopleContributors}<li><b>coveragePeopleContributors:</b> {coveragePeopleContributors backspace="2"}{coveragePeopleContributor}, {/coveragePeopleContributors}</li>{/if}
-     *         {if coverageTimePeriods}<li><b>coverageTimePeriods:</b> {coverageTimePeriods backspace="2"}{coverageTimePeriod}, {/coverageTimePeriods}</li>{/if}
-     *         {if coverageTimePeriodContributors}<li><b>coverageTimePeriodContributors:</b> {coverageTimePeriodContributors backspace="2"}{coverageTimePeriodContributor}, {/coverageTimePeriodContributors}</li>{/if}
-     *         {if creators}<li><b>creators:</b> {creators backspace="2"}{creator}, {/creators}</li>{/if}
-     *         {if creatorOthers}<li><b>creatorOthers:</b> {creatorOthers backspace="2"}{creatorOther}, {/creatorOthers}</li>{/if}
-     *         {if creatorOtherTypes}<li><b>creatorOtherTypes:</b> {creatorOtherTypes backspace="2"}{creatorOtherType}, {/creatorOtherTypes}</li>{/if}
-     *         {if creatorTypes}<li><b>creatorTypes:</b> {creatorTypes backspace="2"}{creatorType}, {/creatorTypes}</li>{/if}
-     *         {if curriculumGeneralTopics}<li><b>curriculumGeneralTopics:</b> {curriculumGeneralTopics backspace="2"}{curriculumGeneralTopic}, {/curriculumGeneralTopics}</li>{/if}
-     *         {if curriculumStandards}<li><b>curriculumStandards:</b> {curriculumStandards backspace="2"}{curriculumStandard}, {/curriculumStandards}</li>{/if}
-     *         {if encodings}<li><b>encodings:</b> {encodings backspace="2"}{encoding}, {/encodings}</li>{/if}
-     *         {if geographicAccessRestrictions}<li><b>geographicAccessRestrictions:</b> {geographicAccessRestrictions backspace="2"}{geographicAccessRestriction}, {/geographicAccessRestrictions}</li>{/if}
-     *         {if gradeLevels}<li><b>gradeLevels:</b> {gradeLevels backspace="2"}{gradeLevel}, {/gradeLevels}</li>{/if}
-     *         {if keywords}<li><b>keywords:</b> {keywords backspace="2"}{keyword}, {/keywords}</li>{/if}
-     *         {if keywordsContributors}<li><b>keywordsContributors:</b> {keywordsContributors backspace="2"}{keywordsContributor}, {/keywordsContributors}</li>{/if}
-     *         {if languageAlternates}<li><b>languageAlternates:</b> {languageAlternates backspace="2"}{languageAlternate}, {/languageAlternates}</li>{/if}
-     *         {if learningObjectives}<li><b>learningObjectives:</b> {learningObjectives backspace="2"}{learningObjective}, {/learningObjectives}</li>{/if}
-     *         {if titleAlternatives}<li><b>titleAlternatives:</b> {titleAlternatives backspace="2"}{titleAlternative}, {/titleAlternatives}</li>{/if}
-     *         {if titleTypes}<li><b>titleTypes:</b> {titleTypes backspace="2"}{titleType}, {/titleTypes}</li>{/if}
+     *         {if audienceLevels}<li><b>Audience Levels:</b> {audienceLevels backspace="2"}{audienceLevel}, {/audienceLevels}</li>{/if}
+     *         {if contentFlags}<li><b>Content Flags:</b> {contentFlags backspace="2"}{contentFlag}, {/contentFlags}</li>{/if}
+     *         {if contributors}<li><b>Contributors:</b> {contributors backspace="2"}{contributor}, {/contributors}</li>{/if}
+     *         {if contributorTypes}<li><b>Contributor Types:</b> {contributorTypes backspace="2"}{contributorType}, {/contributorTypes}</li>{/if}
+     *         {if coverageEvents}<li><b>Coverage Events:</b> {coverageEvents backspace="2"}{coverageEvent}, {/coverageEvents}</li>{/if}
+     *         {if coverageEventContributors}<li><b>Coverage Event Contributors:</b> {coverageEventContributors backspace="2"}{coverageEventContributor}, {/coverageEventContributors}</li>{/if}
+     *         {if coverageGeographicals}<li><b>Coverage Geographicals:</b> {coverageGeographicals backspace="2"}{coverageGeographical}, {/coverageGeographicals}</li>{/if}
+     *         {if coverageGeographicalContributors}<li><b>Coverage Geographical Contributors:</b> {coverageGeographicalContributors backspace="2"}{coverageGeographicalContributor}, {/coverageGeographicalContributors}</li>{/if}
+     *         {if coverageOrganizations}<li><b>Coverage Organizations:</b> {coverageOrganizations backspace="2"}{coverageOrganization}, {/coverageOrganizations}</li>{/if}
+     *         {if coverageOrganizationContributors}<li><b>Coverage Organization Contributors:</b> {coverageOrganizationContributors backspace="2"}{coverageOrganizationContributor}, {/coverageOrganizationContributors}</li>{/if}
+     *         {if coveragePeoples}<li><b>Coverage Peoples:</b> {coveragePeoples backspace="2"}{coveragePeople}, {/coveragePeoples}</li>{/if}
+     *         {if coveragePeopleContributors}<li><b>Coverage People Contributors:</b> {coveragePeopleContributors backspace="2"}{coveragePeopleContributor}, {/coveragePeopleContributors}</li>{/if}
+     *         {if coverageTimePeriods}<li><b>Coverage Time Periods:</b> {coverageTimePeriods backspace="2"}{coverageTimePeriod}, {/coverageTimePeriods}</li>{/if}
+     *         {if coverageTimePeriodContributors}<li><b>Coverage Time Period Contributors:</b> {coverageTimePeriodContributors backspace="2"}{coverageTimePeriodContributor}, {/coverageTimePeriodContributors}</li>{/if}
+     *         {if creators}<li><b>Creators:</b> {creators backspace="2"}{creator}, {/creators}</li>{/if}
+     *         {if creatorOthers}<li><b>Creator Others:</b> {creatorOthers backspace="2"}{creatorOther}, {/creatorOthers}</li>{/if}
+     *         {if creatorOtherTypes}<li><b>Creator Other Types:</b> {creatorOtherTypes backspace="2"}{creatorOtherType}, {/creatorOtherTypes}</li>{/if}
+     *         {if creatorTypes}<li><b>Creator Types:</b> {creatorTypes backspace="2"}{creatorType}, {/creatorTypes}</li>{/if}
+     *         {if curriculumGeneralTopics}<li><b>Curriculum General Topics:</b> {curriculumGeneralTopics backspace="2"}{curriculumGeneralTopic}, {/curriculumGeneralTopics}</li>{/if}
+     *         {if curriculumStandards}<li><b>Curriculum Standards:</b> {curriculumStandards backspace="2"}{curriculumStandard}, {/curriculumStandards}</li>{/if}
+     *         {if encodings}<li><b>Encodings:</b> {encodings backspace="2"}{encoding}, {/encodings}</li>{/if}
+     *         {if geographicAccessRestrictions}<li><b>Geographic Access Restrictions:</b> {geographicAccessRestrictions backspace="2"}{geographicAccessRestriction}, {/geographicAccessRestrictions}</li>{/if}
+     *         {if gradeLevels}<li><b>Grade Levels:</b> {gradeLevels backspace="2"}{gradeLevel}, {/gradeLevels}</li>{/if}
+     *         {if keywords}<li><b>Keywords:</b> {keywords backspace="2"}{keyword}, {/keywords}</li>{/if}
+     *         {if keywordsContributors}<li><b>Keywords Contributors:</b> {keywordsContributors backspace="2"}{keywordsContributor}, {/keywordsContributors}</li>{/if}
+     *         {if languageAlternates}<li><b>Language Alternates:</b> {languageAlternates backspace="2"}{languageAlternate}, {/languageAlternates}</li>{/if}
+     *         {if learningObjectives}<li><b>Learning Objectives:</b> {learningObjectives backspace="2"}{learningObjective}, {/learningObjectives}</li>{/if}
+     *         {if titleAlternatives}<li><b>Title Alternatives:</b> {titleAlternatives backspace="2"}{titleAlternative}, {/titleAlternatives}</li>{/if}
+     *         {if titleTypes}<li><b>Title Types:</b> {titleTypes backspace="2"}{titleType}, {/titleTypes}</li>{/if}
      *     </ul>
-     * {exp:dll:asset}
+     * 
+     *     {if taxonomys}<p><b>Taxonomies:</b></p>
+     *         <ul>
+     *             {taxonomys}<li>{taxonomy}</li>{/taxonomys}
+     *         </ul>
+     *     {/if}
+     * 
+     *     {if thumbnails}
+     *         <p><b>Thumbnails:</b></p>
+     *         {thumbnails}
+     *         <ul>
+     *             {if thumbnail}<li><b>Thumbnail:</b> {thumbnail}</li>{/if}
+     *             {if thumbnail_url}<li><b>Thumbnail URL:</b> {thumbnail_url}</li>{/if}
+     *             {if thumbnail_height}<li><b>Thumbnail Height:</b> {thumbnail_height}</li>{/if}
+     *             {if thumbnail_width}<li><b>Thumbnail Width:</b> {thumbnail_width}</li>{/if}
+     *         </ul>
+     *         {/thumbnails}
+     *     {/if}
+     * 
+     *     {if transcript}
+     *         <p><b>Transcript:</b></p>
+     *         {transcript}
+     *             <ul>
+     *                 {if url}<li><b>URL:</b> {url}</li>{/if}
+     *                 {if name}<li><b>Name:</b> {name}</li>{/if}
+     *                 {if description}<li><b>Description:</b> {description}</li>{/if}
+     *             </ul>
+     *         {/transcript}
+     *     {/if}
+     * 
+     * {/exp:dll:asset}
      **/
     public function asset()
     {
@@ -459,7 +489,51 @@ class Dll
 
     protected function process_asset_transcript(/*array*/ $transcript, /*string*/ $tagdata, /*string*/ $id) /*string*/
     {
-        echo "<p>process_asset_transcript for {$id}</p>";
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, array('transcript' => TRUE));
+
+        $cond = array(
+            'url' => FALSE,
+            'name' => FALSE,
+            'description' => FALSE,
+        );
+
+        foreach ($transcript as $attr)
+        {
+            switch ($attr->tag)
+            {
+            case 'url':
+                $cond['url'] = $attr->value;
+                break;
+            case 'name':
+                $cond['name'] = $attr->value;
+                break;
+            case 'description':
+                $cond['description'] = $attr->value;
+                break;
+            }
+        }
+
+        // extract the full tag data for this tag
+        $tag = 'transcript';
+        $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
+        $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
+
+        // process all matches
+        foreach ($matches as $match)
+        {
+            $tdata = $match[4];
+            $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
+            foreach ($cond as $key => $value)
+            {
+                $pattern = '/'.LD.$key.RD.'/';
+                $tdata = preg_replace($pattern, $value, $tdata);
+            }
+
+            // replace the full tag
+            $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
+            $tagdata = str_replace($match[0], $tdata, $tagdata);
+        }
+
         return $tagdata;
     }
 
