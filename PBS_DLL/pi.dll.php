@@ -213,10 +213,9 @@ class Dll
      *         <p><b>Thumbnails:</b></p>
      *         {thumbnails}
      *         <ul>
-     *             {if thumbnail}<li><b>Thumbnail:</b> {thumbnail}</li>{/if}
-     *             {if thumbnail_url}<li><b>Thumbnail URL:</b> {thumbnail_url}</li>{/if}
-     *             {if thumbnail_height}<li><b>Thumbnail Height:</b> {thumbnail_height}</li>{/if}
-     *             {if thumbnail_width}<li><b>Thumbnail Width:</b> {thumbnail_width}</li>{/if}
+     *             {if url}<li><b>URL:</b> {url}</li>{/if}
+     *             {if renderingWindowWidth}<li><b>Rendering Window Width:</b> {renderingWindowWidth}</li>{/if}
+     *             {if renderingWindowHeight}<li><b>Rendering Window Height:</b> {renderingWindowHeight}</li>{/if}
      *         </ul>
      *         {/thumbnails}
      *     {/if}
@@ -230,6 +229,28 @@ class Dll
      *                 {if description}<li><b>Description:</b> {description}</li>{/if}
      *             </ul>
      *         {/transcript}
+     *     {/if}
+     * 
+     *     {if renditions}
+     *         <p><b>Renditions:</b></p>
+     *         {renditions}
+     *         <ul>
+     *             {if renditionType}<li><b>Rendition Type:</b> {renditionType}</li>{/if}
+     *             {if deliveryProtocols}<li><b>Delivery Protocols:</b> {deliveryProtocols}</li>{/if}
+     *             {if urlHttp}<li><b>HTTP URL:</b> {urlHttp}</li>{/if}
+     *             {if urlMMS}<li><b>MMS URL:</b> {urlMMS}</li>{/if}
+     *             {if urlRtmp}<li><b>RTMP URL:</b> {urlRtmp}</li>{/if}
+     *             {if timeStart}<li><b>Start Time:</b> {timeStart}</li>{/if}
+     *             {if extentDuration}<li><b>Extent Duration:</b> {extentDuration}</li>{/if}
+     *             {if extentFileSize}<li><b>Extent File Size:</b> {extentFileSize}</li>{/if}
+     *             {if samplingRate}<li><b>Sampling Rate:</b> {samplingRate}</li>{/if}
+     *             {if aspectRatio}<li><b>Aspect Ratio:</b> {aspectRatio}</li>{/if}
+     *             {if frameRate}<li><b>Frame Rate:</b> {frameRate}</li>{/if}
+     *             {if colors}<li><b>Colors:</b> {colors}</li>{/if}
+     *             {if renderingWindowHeight}<li><b>Rendering Window Height:</b> {renderingWindowHeight}</li>{/if}
+     *             {if renderingWindowWidth}<li><b>Rendering Window Width:</b> {renderingWindowWidth}</li>{/if}
+     *         </ul>
+     *         {/renditions}
      *     {/if}
      * 
      * {/exp:dll:asset}
@@ -433,27 +454,14 @@ class Dll
         foreach ($thumbnails as $thumbnail)
         {
             $cond = array(
-                'thumbnail' => FALSE,
-                'thumbnail_url' => FALSE,
-                'thumbnail_width' => FALSE,
-                'thumbnail_height' => FALSE,
+                'url' => FALSE,
+                'renderingWindowWidth' => FALSE,
+                'renderingWindowHeight' => FALSE,
             );
 
             foreach ($thumbnail->children as $attr)
             {
-                switch ($attr->tag)
-                {
-                case 'url':
-                    $cond['thumbnail'] = $attr->value;
-                    $cond['thumbnail_url'] = $attr->value;
-                    break;
-                case 'renderingWindowWidth':
-                    $cond['thumbnail_width'] = $attr->value;
-                    break;
-                case 'renderingWindowHeight':
-                    $cond['thumbnail_height'] = $attr->value;
-                    break;
-                }
+                $cond[$attr->tag] = $attr->value;
             }
 
             // extract the full tag data for this tag
@@ -551,7 +559,66 @@ class Dll
 
     protected function process_asset_renditions(/*array*/ $renditions, /*string*/ $tagdata, /*string*/ $id) /*string*/
     {
-        echo "<p>process_asset_taxonomys for {$id}</p>";
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, array('renditions' => TRUE));
+
+        foreach ($renditions as $rendition)
+        {
+            $cond = array(
+				'renditionType' => FALSE,
+				'deliveryProtocols' => FALSE,
+				'urlHttp' => FALSE,
+				'urlMMS' => FALSE,
+				'urlRtmp' => FALSE,
+				'timeStart' => FALSE,
+				'extentDuration' => FALSE,
+				'extentFileSize' => FALSE,
+				'samplingRate' => FALSE,
+				'aspectRatio' => FALSE,
+				'frameRate' => FALSE,
+				'colors' => FALSE,
+				'renderingWindowHeight' => FALSE,
+				'renderingWindowWidth' => FALSE,
+            );
+
+            foreach ($rendition->children as $attr)
+            {
+                if ($attr->tag == 'deliveryProtocols')
+                {
+                    $cond['deliveryProtocols'] = '';
+                    foreach ($attr->children as $protocol) {
+                        $cond['deliveryProtocols'] .= $protocol->value . ', ';
+                    }
+                    $cond['deliveryProtocols'] =
+                        substr($cond['deliveryProtocols'], 0, strlen($cond['deliveryProtocols'])-2);
+                }
+                else
+                {
+                    $cond[$attr->tag] = $attr->value;
+                }
+            }
+
+            // extract the full tag data for this tag
+            $tag = 'renditions';
+            $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
+            $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
+
+            // process all matches
+            foreach ($matches as $match)
+            {
+                $tdata = $match[4];
+                $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
+                foreach ($cond as $key => $value)
+                {
+                    $pattern = '/'.LD.$key.RD.'/';
+                    $tdata = preg_replace($pattern, $value, $tdata);
+                }
+
+                // replace the full tag
+                $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
+                $tagdata = str_replace($match[0], $tdata, $tagdata);
+            }
+        }
+
         return $tagdata;
     }
 
