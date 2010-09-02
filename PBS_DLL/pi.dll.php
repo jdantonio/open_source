@@ -277,6 +277,16 @@ class Dll
      *         {/unorderedAssets}
      *     {/if}
      * 
+     *     {if closedCaptions}
+     *         <p><b>Closed Caption:</b></p>
+     *         {closedCaptions}
+     *         <ul>
+     *             {if url}<li><b>URL:</b> {url}</li>{/if}
+     *             {if captionType}<li><b>Caption Type:</b> {captionType}</li>{/if}
+     *         </ul>
+     *         {/closedCaptions}
+     *     {/if}
+     * 
      * {/exp:dll:asset}
      **/
     public function asset()
@@ -513,7 +523,42 @@ class Dll
 
     protected function process_asset_closed_captions(/*array*/ $captions, /*string*/ $tagdata) /*string*/
     {
-        echo "<p>process_asset_closed_captions for {$id}</p>";
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, array('closedCaptions' => TRUE));
+
+        foreach ($captions as $caption)
+        {
+            $cond = array(
+                'url' => FALSE,
+                'captionType' => FALSE,
+            );
+
+            foreach ($caption->children as $attr)
+            {
+                $cond[$attr->tag] = $attr->value;
+            }
+
+            // extract the full tag data for this tag
+            $tag = 'closedCaptions';
+            $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
+            $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
+
+            // process all matches
+            foreach ($matches as $match)
+            {
+                $tdata = $match[4];
+                $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
+                foreach ($cond as $key => $value)
+                {
+                    $pattern = '/'.LD.$key.RD.'/';
+                    $tdata = preg_replace($pattern, $value, $tdata);
+                }
+
+                // replace the full tag
+                $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
+                $tagdata = str_replace($match[0], $tdata, $tagdata);
+            }
+        }
+
         return $tagdata;
     }
 
