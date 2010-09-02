@@ -253,6 +253,30 @@ class Dll
      *         {/renditions}
      *     {/if}
      * 
+     *     {if orderedAssets}
+     *         <p><b>Ordered Assets:</b></p>
+     *         {orderedAssets}
+     *         <ul>
+     *             {if edcarId}<li><b>ID:</b> {edcarId}</li>{/if}
+     *             {if assetName}<li><b>Asset Name:</b> {assetName}</li>{/if}
+     *             {if assetTitle}<li><b>Asset Title:</b> {assetTitle}</li>{/if}
+     *             {if assetDescription}<li><b>Asset Description:</b> {assetDescription}</li>{/if}
+     *         </ul>
+     *         {/orderedAssets}
+     *     {/if}
+     * 
+     *     {if unorderedAssets}
+     *         <p><b>Unordered Assets:</b></p>
+     *         {unorderedAssets}
+     *         <ul>
+     *             {if edcarId}<li><b>ID:</b> {edcarId}</li>{/if}
+     *             {if assetName}<li><b>Asset Name:</b> {assetName}</li>{/if}
+     *             {if assetTitle}<li><b>Asset Title:</b> {assetTitle}</li>{/if}
+     *             {if assetDescription}<li><b>Asset Description:</b> {assetDescription}</li>{/if}
+     *         </ul>
+     *         {/unorderedAssets}
+     *     {/if}
+     * 
      * {/exp:dll:asset}
      **/
     public function asset()
@@ -314,29 +338,27 @@ class Dll
             switch ($element->tag)
             {
             case 'properties':
-                $tagdata = $this->process_asset_pair_properties($element->children, $tagdata, $id);
-                $tagdata = $this->process_asset_single_properties($element->children, $tagdata, $id);
+                $tagdata = $this->process_asset_pair_properties($element->children, $tagdata);
+                $tagdata = $this->process_asset_single_properties($element->children, $tagdata);
                 break;
             case 'taxonomys':
-                $tagdata = $this->process_asset_taxonomys($element->children, $tagdata, $id);
+                $tagdata = $this->process_asset_taxonomys($element->children, $tagdata);
                 break;
             case 'thumbnails':
-                $tagdata = $this->process_asset_thumbnails($element->children, $tagdata, $id);
+                $tagdata = $this->process_asset_thumbnails($element->children, $tagdata);
                 break;
             case 'closedCaptions':
-                $tagdata = $this->process_asset_closed_captions($element->children, $tagdata, $id);
+                $tagdata = $this->process_asset_closed_captions($element->children, $tagdata);
                 break;
             case 'transcript':
-                $tagdata = $this->process_asset_transcript($element->children, $tagdata, $id);
-                break;
-            case 'orderedAssets':
-                $tagdata = $this->process_asset_ordered_assets($element->children, $tagdata, $id);
+                $tagdata = $this->process_asset_transcript($element->children, $tagdata);
                 break;
             case 'unorderedAssets':
-                $tagdata = $this->process_asset_unordered_assets($element->children, $tagdata, $id);
+            case 'orderedAssets':
+                $tagdata = $this->process_asset_assetrefs($element->tag, $element->children, $tagdata);
                 break;
             case 'renditions':
-                $tagdata = $this->process_asset_renditions($element->children, $tagdata, $id);
+                $tagdata = $this->process_asset_renditions($element->children, $tagdata);
                 break;
             }
         }
@@ -346,7 +368,7 @@ class Dll
         return $tagdata;
     }
 
-    protected function process_asset_single_properties(/*array*/ $props, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    protected function process_asset_single_properties(/*array*/ $props, /*string*/ $tagdata) /*string*/
     {
         // conditional buffer
         $cond = array();
@@ -367,7 +389,7 @@ class Dll
         return $tagdata;
     }
 
-    protected function process_asset_pair_properties(/*array*/ $props, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    protected function process_asset_pair_properties(/*array*/ $props, /*string*/ $tagdata) /*string*/
     {
         // conditional buffer
         $cond = array();
@@ -409,7 +431,7 @@ class Dll
         return $tagdata;
     }
 
-    protected function process_asset_taxonomys(/*array*/ $taxonomys, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    protected function process_asset_taxonomys(/*array*/ $taxonomys, /*string*/ $tagdata) /*string*/
     {
         // conditional buffer
         $cond = array();
@@ -447,7 +469,7 @@ class Dll
         return $tagdata;
     }
 
-    protected function process_asset_thumbnails(/*array*/ $thumbnails, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    protected function process_asset_thumbnails(/*array*/ $thumbnails, /*string*/ $tagdata) /*string*/
     {
         $tagdata = $this->_FNS->prep_conditionals($tagdata, array('thumbnails' => TRUE));
 
@@ -489,13 +511,13 @@ class Dll
         return $tagdata;
     }
 
-    protected function process_asset_closed_captions(/*array*/ $captions, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    protected function process_asset_closed_captions(/*array*/ $captions, /*string*/ $tagdata) /*string*/
     {
         echo "<p>process_asset_closed_captions for {$id}</p>";
         return $tagdata;
     }
 
-    protected function process_asset_transcript(/*array*/ $transcript, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    protected function process_asset_transcript(/*array*/ $transcript, /*string*/ $tagdata) /*string*/
     {
         $tagdata = $this->_FNS->prep_conditionals($tagdata, array('transcript' => TRUE));
 
@@ -545,19 +567,49 @@ class Dll
         return $tagdata;
     }
 
-    protected function process_asset_ordered_assets(/*array*/ $assets, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    protected function process_asset_assetrefs(/*string*/ $tag, /*array*/ $assets, /*string*/ $tagdata) /*string*/
     {
-        echo "<p>process_asset_ordered_assets for {$id}</p>";
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, array($tag => TRUE));
+
+        foreach ($assets as $asset)
+        {
+            $cond = array(
+                'edcarId' => FALSE,
+                'assetName' => FALSE,
+                'assetTitle' => FALSE,
+                'assetDescription' => FALSE,
+            );
+
+            foreach ($asset->children as $attr)
+            {
+                $cond[$attr->tag] = $attr->value;
+            }
+
+            // extract the full tag data for this tag
+            $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
+            $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
+
+            // process all matches
+            foreach ($matches as $match)
+            {
+                $tdata = $match[4];
+                $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
+                foreach ($cond as $key => $value)
+                {
+                    $pattern = '/'.LD.$key.RD.'/';
+                    $tdata = preg_replace($pattern, $value, $tdata);
+                }
+
+                // replace the full tag
+                $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
+                $tagdata = str_replace($match[0], $tdata, $tagdata);
+            }
+        }
+
         return $tagdata;
     }
 
-    protected function process_asset_unordered_assets(/*array*/ $assets, /*string*/ $tagdata, /*string*/ $id) /*string*/
-    {
-        echo "<p>process_asset_unordered_assets for {$id}</p>";
-        return $tagdata;
-    }
-
-    protected function process_asset_renditions(/*array*/ $renditions, /*string*/ $tagdata, /*string*/ $id) /*string*/
+    protected function process_asset_renditions(/*array*/ $renditions, /*string*/ $tagdata) /*string*/
     {
         $tagdata = $this->_FNS->prep_conditionals($tagdata, array('renditions' => TRUE));
 
