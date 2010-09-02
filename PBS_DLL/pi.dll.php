@@ -236,7 +236,6 @@ class Dll
      *         {renditions}
      *         <ul>
      *             {if renditionType}<li><b>Rendition Type:</b> {renditionType}</li>{/if}
-     *             {if deliveryProtocols}<li><b>Delivery Protocols:</b> {deliveryProtocols}</li>{/if}
      *             {if urlHttp}<li><b>HTTP URL:</b> {urlHttp}</li>{/if}
      *             {if urlMMS}<li><b>MMS URL:</b> {urlMMS}</li>{/if}
      *             {if urlRtmp}<li><b>RTMP URL:</b> {urlRtmp}</li>{/if}
@@ -286,7 +285,6 @@ class Dll
      *         </ul>
      *         {/closedCaptions}
      *     {/if}
-     * 
      * {/exp:dll:asset}
      **/
     public function asset()
@@ -361,11 +359,13 @@ class Dll
                 $tagdata = $this->process_asset_closed_captions($element->children, $tagdata);
                 break;
             case 'transcript':
-                $tagdata = $this->process_asset_transcript($element->children, $tagdata);
+                $tagdata = $this->process_asset_transcript($element, $tagdata);
                 break;
             case 'unorderedAssets':
+                $tagdata = $this->process_asset_unordered_assets($element->children, $tagdata);
+                break;
             case 'orderedAssets':
-                $tagdata = $this->process_asset_assetrefs($element->tag, $element->children, $tagdata);
+                $tagdata = $this->process_asset_orderedassets($element->children, $tagdata);
                 break;
             case 'renditions':
                 $tagdata = $this->process_asset_renditions($element->children, $tagdata);
@@ -479,25 +479,25 @@ class Dll
         return $tagdata;
     }
 
-    protected function process_asset_thumbnails(/*array*/ $thumbnails, /*string*/ $tagdata) /*string*/
+    protected function process_asset_sequence(/*string*/ $tag, /*array*/ $cond, /*array*/ &$seq, /*string*/ $tagdata) /*string*/
     {
-        $tagdata = $this->_FNS->prep_conditionals($tagdata, array('thumbnails' => TRUE));
+        $tagdata = $this->_FNS->prep_conditionals($tagdata, array($tag => TRUE));
 
-        foreach ($thumbnails as $thumbnail)
+        foreach ($seq as $elem)
         {
-            $cond = array(
-                'url' => FALSE,
-                'renderingWindowWidth' => FALSE,
-                'renderingWindowHeight' => FALSE,
-            );
+            // init all tags to false for conditional processing
+            foreach ($cond as $key => $value)
+            {
+                $cond[$key] = FALSE;
+            }
 
-            foreach ($thumbnail->children as $attr)
+            // set all conditionals where tag is present
+            foreach ($elem->children as $attr)
             {
                 $cond[$attr->tag] = $attr->value;
             }
 
             // extract the full tag data for this tag
-            $tag = 'thumbnails';
             $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
             $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
 
@@ -519,204 +519,86 @@ class Dll
         }
 
         return $tagdata;
+    }
+
+    protected function process_asset_thumbnails(/*array*/ $thumbnails, /*string*/ $tagdata) /*string*/
+    {
+        $cond = array(
+            'url' => FALSE,
+            'renderingWindowWidth' => FALSE,
+            'renderingWindowHeight' => FALSE,
+        );
+
+        return $this->process_asset_sequence('thumbnails', $cond, $thumbnails, $tagdata);
     }
 
     protected function process_asset_closed_captions(/*array*/ $captions, /*string*/ $tagdata) /*string*/
     {
-        $tagdata = $this->_FNS->prep_conditionals($tagdata, array('closedCaptions' => TRUE));
+        $cond = array(
+            'url' => FALSE,
+            'captionType' => FALSE,
+        );
 
-        foreach ($captions as $caption)
-        {
-            $cond = array(
-                'url' => FALSE,
-                'captionType' => FALSE,
-            );
-
-            foreach ($caption->children as $attr)
-            {
-                $cond[$attr->tag] = $attr->value;
-            }
-
-            // extract the full tag data for this tag
-            $tag = 'closedCaptions';
-            $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
-            $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
-
-            // process all matches
-            foreach ($matches as $match)
-            {
-                $tdata = $match[4];
-                $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
-                foreach ($cond as $key => $value)
-                {
-                    $pattern = '/'.LD.$key.RD.'/';
-                    $tdata = preg_replace($pattern, $value, $tdata);
-                }
-
-                // replace the full tag
-                $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
-                $tagdata = str_replace($match[0], $tdata, $tagdata);
-            }
-        }
-
-        return $tagdata;
+        return $this->process_asset_sequence('closedCaptions', $cond, $captions, $tagdata);
     }
 
-    protected function process_asset_transcript(/*array*/ $transcript, /*string*/ $tagdata) /*string*/
+    protected function process_asset_ordered_assets(/*array*/ $assets, /*string*/ $tagdata) /*string*/
     {
-        $tagdata = $this->_FNS->prep_conditionals($tagdata, array('transcript' => TRUE));
+        $cond = array(
+            'edcarId' => FALSE,
+            'assetName' => FALSE,
+            'assetTitle' => FALSE,
+            'assetDescription' => FALSE,
+        );
 
+        return $this->process_asset_sequence('orderedAssets', $cond, $assets, $tagdata);
+    }
+
+    protected function process_asset_unordered_assets(/*array*/ $assets, /*string*/ $tagdata) /*string*/
+    {
+        $cond = array(
+            'edcarId' => FALSE,
+            'assetName' => FALSE,
+            'assetTitle' => FALSE,
+            'assetDescription' => FALSE,
+        );
+
+        return $this->process_asset_sequence('unorderedAssets', $cond, $assets, $tagdata);
+    }
+
+    protected function process_asset_transcript(/*XML_Cache Object*/ $transcript, /*string*/ $tagdata) /*string*/
+    {
         $cond = array(
             'url' => FALSE,
             'name' => FALSE,
             'description' => FALSE,
         );
 
-        foreach ($transcript as $attr)
-        {
-            switch ($attr->tag)
-            {
-            case 'url':
-                $cond['url'] = $attr->value;
-                break;
-            case 'name':
-                $cond['name'] = $attr->value;
-                break;
-            case 'description':
-                $cond['description'] = $attr->value;
-                break;
-            }
-        }
+        $transcripts = array($transcript);
 
-        // extract the full tag data for this tag
-        $tag = 'transcript';
-        $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
-        $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
-
-        // process all matches
-        foreach ($matches as $match)
-        {
-            $tdata = $match[4];
-            $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
-            foreach ($cond as $key => $value)
-            {
-                $pattern = '/'.LD.$key.RD.'/';
-                $tdata = preg_replace($pattern, $value, $tdata);
-            }
-
-            // replace the full tag
-            $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
-            $tagdata = str_replace($match[0], $tdata, $tagdata);
-        }
-
-        return $tagdata;
-    }
-
-    protected function process_asset_assetrefs(/*string*/ $tag, /*array*/ $assets, /*string*/ $tagdata) /*string*/
-    {
-        $tagdata = $this->_FNS->prep_conditionals($tagdata, array($tag => TRUE));
-
-        foreach ($assets as $asset)
-        {
-            $cond = array(
-                'edcarId' => FALSE,
-                'assetName' => FALSE,
-                'assetTitle' => FALSE,
-                'assetDescription' => FALSE,
-            );
-
-            foreach ($asset->children as $attr)
-            {
-                $cond[$attr->tag] = $attr->value;
-            }
-
-            // extract the full tag data for this tag
-            $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
-            $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
-
-            // process all matches
-            foreach ($matches as $match)
-            {
-                $tdata = $match[4];
-                $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
-                foreach ($cond as $key => $value)
-                {
-                    $pattern = '/'.LD.$key.RD.'/';
-                    $tdata = preg_replace($pattern, $value, $tdata);
-                }
-
-                // replace the full tag
-                $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
-                $tagdata = str_replace($match[0], $tdata, $tagdata);
-            }
-        }
-
-        return $tagdata;
+        return $this->process_asset_sequence('transcript', $cond, $transcripts, $tagdata);
     }
 
     protected function process_asset_renditions(/*array*/ $renditions, /*string*/ $tagdata) /*string*/
     {
-        $tagdata = $this->_FNS->prep_conditionals($tagdata, array('renditions' => TRUE));
+        $cond = array(
+            'renditionType' => FALSE,
+            'deliveryProtocols' => FALSE,
+            'urlHttp' => FALSE,
+            'urlMMS' => FALSE,
+            'urlRtmp' => FALSE,
+            'timeStart' => FALSE,
+            'extentDuration' => FALSE,
+            'extentFileSize' => FALSE,
+            'samplingRate' => FALSE,
+            'aspectRatio' => FALSE,
+            'frameRate' => FALSE,
+            'colors' => FALSE,
+            'renderingWindowHeight' => FALSE,
+            'renderingWindowWidth' => FALSE,
+        );
 
-        foreach ($renditions as $rendition)
-        {
-            $cond = array(
-				'renditionType' => FALSE,
-				'deliveryProtocols' => FALSE,
-				'urlHttp' => FALSE,
-				'urlMMS' => FALSE,
-				'urlRtmp' => FALSE,
-				'timeStart' => FALSE,
-				'extentDuration' => FALSE,
-				'extentFileSize' => FALSE,
-				'samplingRate' => FALSE,
-				'aspectRatio' => FALSE,
-				'frameRate' => FALSE,
-				'colors' => FALSE,
-				'renderingWindowHeight' => FALSE,
-				'renderingWindowWidth' => FALSE,
-            );
-
-            foreach ($rendition->children as $attr)
-            {
-                if ($attr->tag == 'deliveryProtocols')
-                {
-                    $cond['deliveryProtocols'] = '';
-                    foreach ($attr->children as $protocol) {
-                        $cond['deliveryProtocols'] .= $protocol->value . ', ';
-                    }
-                    $cond['deliveryProtocols'] =
-                        substr($cond['deliveryProtocols'], 0, strlen($cond['deliveryProtocols'])-2);
-                }
-                else
-                {
-                    $cond[$attr->tag] = $attr->value;
-                }
-            }
-
-            // extract the full tag data for this tag
-            $tag = 'renditions';
-            $pattern = '/('.LD.$tag.'(\s+backspace="(\d+)")?'.RD.')(.*?)('.LD.SLASH.$tag.RD.')/s';
-            $count = preg_match_all($pattern, $tagdata, $matches, PREG_SET_ORDER);
-
-            // process all matches
-            foreach ($matches as $match)
-            {
-                $tdata = $match[4];
-                $tdata = $this->_FNS->prep_conditionals($tdata, $cond);
-                foreach ($cond as $key => $value)
-                {
-                    $pattern = '/'.LD.$key.RD.'/';
-                    $tdata = preg_replace($pattern, $value, $tdata);
-                }
-
-                // replace the full tag
-                $tdata = substr($tdata, 0, strlen($tdata)-intval($match[3]));
-                $tagdata = str_replace($match[0], $tdata, $tagdata);
-            }
-        }
-
-        return $tagdata;
+        return $this->process_asset_sequence('renditions', $cond, $renditions, $tagdata);
     }
 
     protected function process_remaining_conditionals(/*string*/ $tagdata) /*string*/
