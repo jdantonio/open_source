@@ -618,13 +618,64 @@ class Npr
             $format = (isset($match[3]) ? $match[3] : 'mp3');
 
             // get the correct audio link from the data
-            $link = (isset($audio['format'][$format]['$text']) ? $audio['format'][$format]['$text'] : '');
+            if ($format == 'm3u')
+            {
+                $link = (isset($audio['format']['mp3']['$text']) ? $audio['format']['mp3']['$text'] : '');
+            }
+            else if ($format == 'mp3')
+            {
+                $link = (isset($audio['format']['mp3']['$text']) ? $audio['format']['mp3']['$text'] : '');
+                if (preg_match('/\.m3u/i', $link) > 0) $link = $this->mp3_link_from_m3u_url($link);
+                //if (! empty($link)) $link = $this->mp3_link_from_m3u_url($link);
+            }
+            else
+            {
+                $link = (isset($audio['format'][$format]['$text']) ? $audio['format'][$format]['$text'] : '');
+            }
 
             // perform the replacement 
             $tagdata = $this->_TMPL->swap_var_single($var, $link, $tagdata);
         }
 
         return $tagdata;
+    }
+
+    /**
+     * Retrieve an M3U playlist from NPR and retrieve the first MP3 URL.
+     *
+     * The NPR API generally returns an M3U playlist URL for MP3 audio rather
+     * than an URL to directly to the MP3. This function makes a network
+     * request to NPR to retrieve the M3U playlist and parse the first MP3
+     * URL in the playlist. This incurs network latency so it should only be
+     * used when an MP3 URL is actually needed for spawning a player.
+     **/
+    private function mp3_link_from_m3u_url(/*string*/ $url) /*string*/
+    {
+        $mp3 = '';
+        $m3u = '';
+
+        // create a cURL handle
+        if ($curl = curl_init($url))
+        {
+            // set the options
+            if (curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE))
+            {
+                // get the playlist data
+                $m3u = curl_exec($curl);
+            }
+
+            // close the cURL handle
+            curl_close($curl);
+        }
+
+        // parse the url from the playlist
+        $pattern = '/http:\S+\.mp3/is';
+        if (preg_match($pattern, $m3u, $matches) > 0)
+        {
+            $mp3 = $matches[0];
+        }
+
+        return $mp3;
     }
 
     /**
