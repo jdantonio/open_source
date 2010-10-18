@@ -1,11 +1,10 @@
-# ideastream(r) Open Source Projects
+# ideastream(r) Utilities
 
-* **IdeaUtils:** An ExpressionEngine 1.6.x plugin with various helper functions.
-* **NPR_API:** An ExpressionEngine 1.6.x plugin for accessing the NPR API.
-* **PBS_DLL:** An ExpressionEngine 1.6.x plugin for accessing the PBS Digital Learning Library (DLL).
-* **SagePayment:** A generic PHP class wrapping several operations in the Sage Payment Solutions web services API.
-* **StatehouseNews:** An ExpressionEngine 1.6.x module providing functionality for the next version of the Statehouse News Bureau web site (http://www.statenews.org/).
-* **Utilities:** Various small scripts and libraries.
+Various small scripts and libraries.
+
+For more information see the following resources:
+
+* [ideastream](http://www.ideastream.org/) 
 
 ## License
 
@@ -28,4 +27,3 @@ Copyright (c) ideastream(r) -- released under the [MIT license](http://www.opens
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
-

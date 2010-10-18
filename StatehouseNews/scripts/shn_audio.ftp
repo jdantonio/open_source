@@ -1,0 +1,15 @@
+open 10.86.1.176
+ftpuser
+0gvbQEV
+mget /var/www/uploads/shn/*.wav
+mdelete /var/www/uploads/shn/*.wav
+close
+
+open 10.86.1.177
+ftpuser
+0gvbQEV
+mget /var/www/uploads/shn/*.wav
+mdelete /var/www/uploads/shn/*.wav
+close
+
+bye
