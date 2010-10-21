@@ -397,6 +397,7 @@ class ShnStory extends Model
 
         // remove all escaped characters
         $fname = preg_replace('/%\d\d/', '', $fname);
+        $fname = preg_replace('/%[0-9a-fA-F]{2}/', '', $fname);
 
         // remove all special characters
         $fname = preg_replace('/[^\w\d\s-_\.]/', '', $fname);

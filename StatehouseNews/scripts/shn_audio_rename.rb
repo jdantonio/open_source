@@ -19,23 +19,26 @@ end
 files.each do |file|
 
     # create the new file name
-    new_path = file
+    new_path = String.new(file)
+
+    # trim front and back
+    new_path.strip!
 
     # remove all escaped characters
-    new_path = new_path.gsub(/%\d\d/, '')
+    new_path.gsub!(/%[0-9a-fA-F]{2}/, '')
 
     # remove all special characters
-    new_path = new_path.gsub(/\s/, ' ')
-    new_path = new_path.gsub(/[^A-Za-z0-9\s\._-]/, '')
+    new_path.gsub!(/\s/, ' ')
+    new_path.gsub!(/[^A-Za-z0-9\s\._-]/, '')
     
     # remove all spaces before dots
-    new_path = new_path.gsub(/\s+\./, '.')
+    new_path.gsub!(/\s+\./, '.')
 
     # replace spaces with underscores
-    new_path = new_path.gsub(/\s/, '_')
+    new_path.gsub!(/\s/, '_')
 
     # make lowercase
-    new_path = new_path.downcase
+    new_path.downcase!
     
     # add the destination path
     new_path = destdir + new_path
