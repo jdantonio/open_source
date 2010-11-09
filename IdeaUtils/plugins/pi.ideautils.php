@@ -131,7 +131,7 @@ class IdeaUtils
         {
             // improperly configured tag
             header('HTTP/1.0 401 Unauthorized');
-            echo('You are not authorized to view this page.');
+            //echo('You are not authorized to view this page.');
             exit;
         }
         else if (! isset($_SERVER['PHP_AUTH_USER'])
@@ -143,7 +143,7 @@ class IdeaUtils
             header("WWW-Authenticate: Basic realm=\"{$realm}\"");
             header('HTTP/1.0 401 Unauthorized');
             $_SESSION[$sess] = true;
-            echo('You are not authorized to view this page.');
+            //echo('You are not authorized to view this page.');
             exit;
         }
         else
@@ -159,7 +159,7 @@ class IdeaUtils
                 // send error
                 header('HTTP/1.0 401 Unauthorized');
                 unset($_SESSION[$sess]);
-                echo('You are not authorized to view this page.');
+                //echo('You are not authorized to view this page.');
                 exit;
             }
         }
@@ -462,12 +462,119 @@ class IdeaUtils
         return $this->return_data;
     }
 
+    /**
+     * An override of before_date() that negates the result. Useful since EE
+     * template conditionals do not include a negation operator.
+     *
+     * @see before_date
+     **/
+    public function not_before_date() /*BOOL as string*/
+    {
+        return ($this->before_date(false) ? 'FALSE' : 'TRUE');
+    }
+
+    /**
+     * A simple function that will compare a given date value either to another
+     * date value or 'now' and return either true or false. It is intended to be
+     * used within an EE 'if' block. If the $given date includes a time then the
+     * check will include the time as well. If $give is just a date then only
+     * the date will be checked.
+     *
+     * @note To understand the parameters, use the following mnemonic:
+     * Return true if the given date is before the target date.
+     *
+     * @param $given The date that we are asking about.
+     * @param $target The date we are checking against. Defaults to 'now'.
+     * @param $inclusive Determines whether the $target date is inclusive
+     *        in the comparison. Defaults to FALSE.
+     **/
+    public function before_date(/*bool*/ $return_as_string = true) /*BOOL*/
+    {
+        // get the parameters
+		$given = $this->_TMPL->fetch_param('given');
+        $target = $this->_TMPL->fetch_param('target');
+        $incl = $this->_TMPL->fetch_param('inclusive');
+
+        // get the actual given timestamp
+        if (is_numeric($given))
+        {
+            // template param was already a timestamp
+            $given = intval($given);
+        }
+        else
+        {
+            // convert string to timestamp
+            $given = strtotime($given);
+        }
+
+        // without a given date, give up
+        if ($given == FALSE) return 'FALSE';
+
+        // get the actual target timestamp
+        if ($target === FALSE)
+        {
+            // no template param given
+            $target = time();
+        }
+        else if (is_numeric($target))
+        {
+            // template param was already a timestamp
+            $target = intval($target);
+        }
+        else
+        {
+            // convert string to timestamp
+            $target = strtotime($target);
+        }
+
+        // check for inclusiveness
+        if ($incl !== FALSE)
+        {
+            $incl = (0 < preg_match('/^(t|y|true|yes)$/i', $incl));
+        }
+
+        // get the date components
+        $given_array = getdate($given);
+        $target_array = getdate($target);
+
+        // determine if we are date-only or date/time
+        if ($given_array['hours'] == 0 && $given_array['minutes'] == 0 && $given_array['seconds'] == 0)
+        {
+            $target = mktime(
+                0,  //hour
+                0,  //minute
+                0,  //second
+                $target_array['mon'],
+                $target_array['mday'],
+                $target_array['year']
+            );
+        }
+                
+        // perform the comparison
+        if ($incl)
+        {
+            $retval = ($given <= $target);
+        }
+        else
+        {
+            $retval = ($given < $target);
+        }
+        
+        // return EE friendly result
+        if ($return_as_string) {
+            return ($retval ? 'TRUE' : 'FALSE');
+        } else {
+            return $retval;
+        }
+    }
+
 	//--------------------------------------------------------------------------
 	// Utility Methods
 	//--------------------------------------------------------------------------
 
     /**
-     * 
+     * Generate a random alphanumeric string of the given length.
+     *
      * @link http://www.lost-in-code.com/programming/php-code/php-random-string-with-numbers-and-letters/
      **/
     private function _random_string(/*int*/ $length = 10) /*string*/
@@ -593,6 +700,35 @@ class IdeaUtils
 		ob_start();
 ?>
 IdeaUtils API - Various random utilities used at ideastream.
+
+----------
+
+A simple function that will compare a given date value either to another date value or 'now' and return either true or false. It is intended to be used within an EE 'if' block. If the $given date includes a time then the check will include the time as well. If $give is just a date then only the date will be checked.
+
+{exp:ideautils:before_date given="2010-11-09" target="2010-11-09" inclusive="true"}
+{exp:ideautils:before_date given="2010-11-09" inclusive="false"}
+{exp:ideautils:before_date given="2010-11-09"}
+
+{exp:ideautils:before_date given="2010-11-09 13:20:00" target="2010-11-09 00:00:00" inclusive="false"}
+{exp:ideautils:before_date given="2010-11-09 13:20:00"}
+
+NOTE: This function can be used in conjunction with the weblog tag entry_date variable to conduct conditional processing based on the date of the content.
+There is a bug in the template processor, however. The entry_date variable MUST be used without formatting prior to the before_date tag otherwise the text '{entry_date}' will be passed to the tag.
+
+{exp:weblog:entries weblog="statehousenews" limit="1" show_expired="true"}
+    <!-- {entry_date} -->
+    {if {exp:ideautils:before_date given="{entry_date}" target="2011-01-01 00:00:00" inclusive="false"}}
+        Use the OLD video file conventions.
+    {if:else}
+        Use the NEW video file conventions.
+    {/if}
+{/exp:weblog:entries}
+
+----------
+
+An override of before_date() that negates the result. Useful since EE template conditionals do not include a negation operator.
+
+{exp:ideautils:not_before_date given="2010-11-09" target="2010-11-09" inclusive="true"}
 
 ----------
 
