@@ -552,7 +552,7 @@ class Statehousenews
         $story = $this->get_current_story();
 
         // retrieve all members
-        $sql = 'SELECT * FROM ' . ShnUser::TABLE_NAME . ' ORDER BY name ASC;';
+        $sql = 'SELECT * FROM ' . ShnUser::TABLE_NAME . ' WHERE enabled = 1 ORDER BY name ASC;';
         $rs = $this->_DB->query($sql);
 
         // retrieve current user
