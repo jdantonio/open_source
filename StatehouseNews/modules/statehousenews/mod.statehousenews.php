@@ -154,6 +154,7 @@ class Statehousenews
             $tagdata .= '</ul></div>';
         }
 
+        flash_reset_errors();
         return $tagdata;
     }
 
@@ -246,7 +247,6 @@ class Statehousenews
     {
         $user = false;
         $tagdata = '';
-        flash_clear_errors();
 
         // check for login cookie
         $user = $this->get_current_user();
@@ -293,7 +293,7 @@ class Statehousenews
     public function upload()
     {
         $ok = true;
-        flash_errors();
+        flash_reset_errors();
         flash_clear(self::STORY_SESSION_KEY);
 
         // get the story configuration
@@ -306,7 +306,7 @@ class Statehousenews
         // check file upload
         if (! isset($_FILES['audio_file']) || $_FILES['audio_file']['error'] != 0)
         {
-            $story->errors("There was a problem uploading the file.");
+            flash_errors("There was a problem uploading the file.");
             $ok = false;
         }
 
@@ -324,13 +324,13 @@ class Statehousenews
             $pattern .= ')$/i';
             if (! preg_match($pattern, $story->audio_file()))
             {
-                $story->errors("The file '{$story->audio_file()}' is not of an authorized type.");
+                flash_errors("The file '{$story->audio_file()}' is not of an authorized type.");
                 $ok = false;
             }
         }
 
         // validate story
-        if ($ok) $ok = $story->validate();
+        $ok = ($story->validate() && $ok);
 
         // move file to staging directory
         if ($ok)
@@ -343,7 +343,7 @@ class Statehousenews
             // perform the move
             if (FALSE === move_uploaded_file($upload['tmp_name'], $dest))
             {
-                $story->errors("There was an error moving '{$upload['tmp_name']}' to '{$dest}'.");
+                flash_errors("There was an error moving '{$upload['tmp_name']}' to '{$dest}'.");
                 $ok = false;
             }
         }
@@ -351,14 +351,21 @@ class Statehousenews
         // save the story
         if ($ok && ! $story->save())
         {
-            $story->errors("There was a problem saving the story.");
+            flash_errors("There was a problem saving the story.");
             $ok = false;
         }
 
         // process response
-        if (! $ok) flash_errors($story->errors());
-        flash_errors($story->errors());
-        flash_set(self::STORY_SESSION_KEY, $story);
+        if (! $ok)
+        {
+            flash_errors($story->errors());
+            flash_set(self::STORY_SESSION_KEY, $story);
+        }
+        else
+        {
+            flash_clear(self::STORY_SESSION_KEY);
+            flash_reset_errors();
+        }
         $this->redirect($ok, $tagdata);
         return $tagdata;
     }
@@ -595,7 +602,7 @@ class Statehousenews
         $story = $this->get_current_story();
 
         // retrieve all members
-        $sql = 'SELECT DISTINCT station FROM ' . ShnUser::TABLE_NAME . ' ORDER BY name ASC;';
+        $sql = 'SELECT DISTINCT station FROM ' . ShnUser::TABLE_NAME . ' ORDER BY station ASC;';
         $rs = $this->_DB->query($sql);
 
         // retrieve current user

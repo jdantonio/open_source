@@ -26,12 +26,12 @@ function flash_errors(/*mixed*/ $data = null) /*mixed*/
 }
 
 /**
- * @see ShnFlash::clear_errors()
+ * @see ShnFlash::reset_errors()
  **/
-function flash_clear_errors() /*voif*/
+function flash_reset_errors() /*voif*/
 {
     $flash = ShnFlash::instance();
-    return $flash->clear_errors();
+    return $flash->reset_errors();
 }
 
 /**
@@ -194,7 +194,7 @@ class ShnFlash {
     /**
      * Clear the errors array.
      **/
-    public function clear_errors() /*void*/
+    public function reset_errors() /*void*/
     {
         $_SESSION[self::ERRORS] = array();
     }
@@ -204,13 +204,23 @@ class ShnFlash {
      **/
     public function errors(/*mixed*/ $data = null) /*mixed*/
     {
-        if (is_null($data)) {
+        if (! is_array($_SESSION[self::ERRORS])) $_SESSION[self::ERRORS] = array();
+
+        if (is_null($data))
+        {
             return $_SESSION[self::ERRORS];
-        } elseif (is_array($data)) {
-            $_SESSION[self::ERRORS] = $data;
+        }
+        elseif (is_array($data))
+        {
+            foreach ($data as $datum)
+            {
+                $_SESSION[self::ERRORS][] = $datum;
+            }
             return true;
-        } else {
-            $_SESSION[self::ERRORS] = array($data);
+        }
+        else
+        {
+            $_SESSION[self::ERRORS][] = $data;
             return true;
         }
     }
@@ -312,4 +322,3 @@ class ShnFlash {
 // THE SOFTWARE.
 //******************************************************************************
 ?>
-

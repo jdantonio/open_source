@@ -3,8 +3,8 @@
 # NOTE: Run this script from the "StatehouseNews" directory
 
 # the deployment directories
-#export deploy_dir=/var/www/ExpressionEngine/qwerty/
-export deploy_dir=/Applications/MAMP/htdocs/ee/system
+export deploy_dir=/var/www/ExpressionEngine/qwerty/
+#export deploy_dir=/Applications/MAMP/htdocs/ee/system
 export module_dir=$deploy_dir/modules/statehousenews
 export models_dir=$deploy_dir/modules/statehousenews/models
 export views_dir=$deploy_dir/modules/statehousenews/views
