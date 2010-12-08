@@ -148,6 +148,10 @@ class ShnImporter
                 $properties['full_story_copy'] = $properties['title'];
             }
 
+            // convert dates to timestamps
+            $properties['entry_date'] = strtotime($properties['entry_date']);
+            $properties['kill_date'] = strtotime($properties['kill_date']);
+
             // create a new story object
             $story = new ShnStory($properties);
 

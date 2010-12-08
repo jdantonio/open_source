@@ -499,6 +499,7 @@ class ShnStory extends Model
                         $method_name = preg_replace(ShnConfig::REGEX_FIELD_NAME, '', $item);
                         $value = $this->{$method_name}();
                         $data['field_id_'.$field['field_id']] = $value;
+                        $data['field_ft_'.$field['field_id']] = $field['field_fmt'];
                         break;
                     }
                 }

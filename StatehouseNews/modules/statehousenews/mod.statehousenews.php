@@ -309,14 +309,13 @@ class Statehousenews
             flash_errors("There was a problem uploading the file.");
             $ok = false;
         }
-
-        // set the audio file name
-        $upload = $_FILES['audio_file'];
-        $story->audio_file($upload['name']);
-
-        // check the file extension for allowed type
-        if ($ok)
+        else
         {
+            // set the audio file name
+            $upload = $_FILES['audio_file'];
+            $story->audio_file($upload['name']);
+
+            // check the file extension for allowed type
             $filetypes = explode(',', $config->audio_file_types());
             $pattern = '/\.(';
             foreach ($filetypes as $ftype) $pattern .= strtolower(trim($ftype)) . '|';
@@ -327,10 +326,10 @@ class Statehousenews
                 flash_errors("The file '{$story->audio_file()}' is not of an authorized type.");
                 $ok = false;
             }
-        }
 
-        // validate story
-        $ok = ($story->validate() && $ok);
+            // validate story
+            $ok = ($story->validate() && $ok);
+        }
 
         // move file to staging directory
         if ($ok)
