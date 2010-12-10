@@ -345,6 +345,11 @@ class Statehousenews
                 flash_errors("There was an error moving '{$upload['tmp_name']}' to '{$dest}'.");
                 $ok = false;
             }
+            else
+            {
+                // change the file permissions
+                chmod($dest, 0666);
+            }
         }
 
         // save the story
