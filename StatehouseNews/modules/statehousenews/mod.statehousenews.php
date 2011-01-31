@@ -512,7 +512,7 @@ class Statehousenews
         $tagdata .= "<select name=\"{$fld}\" id=\"{$id}\" class=\"{$class}\" style=\"{$style}\">";
         for ($i = 1; $i <= 12; $i++)
         {
-            $month = date('F', mktime(0, 0, 0, $i));
+            $month = date('F', mktime(0, 0, 0, $i, 1));
             $tagdata .= "<option value=\"{$i}\"";
             if ($sel == $i) $tagdata .= ' selected="selected"';
             $tagdata .= ">{$month}</option>";
